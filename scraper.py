@@ -9,7 +9,7 @@ import json, os
 
 def scrape_myntra(category="shoes", limit=20):
     options = Options()
-    # options.add_argument("--headless")  # Enable for production if needed
+    options.add_argument("--headless")  # Enable for production if needed
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
 
