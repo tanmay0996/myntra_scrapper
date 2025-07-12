@@ -108,13 +108,12 @@ function App() {
             {filtered.map((p, i) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
                 <Card elevation={4} sx={{ borderRadius: 3 }}>
-                  <CardMedia
-                    component="img"
-                    height="220"
-                    image={p.image}
-                    alt={p.name}
-                    sx={{ objectFit: 'cover' }}
-                  />
+                 <CardMedia
+  component="img"
+  height="220"
+  image="https://via.placeholder.com/220x220?text=Myntra"
+  alt={p.name}
+/>
                   <CardContent>
                     <Link
                       href={p.link}
