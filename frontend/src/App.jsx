@@ -23,11 +23,11 @@ function App() {
   const refreshProducts = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/refresh')
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/refresh`)
       const { message } = await res.json()
       console.log(message)
 
-      const productsRes = await fetch('/products')
+      const productsRes = await fetch(`${import.meta.env.VITE_API_URL}/products`)
       const data = await productsRes.json()
       setItems(data)
       setScraped(true)
