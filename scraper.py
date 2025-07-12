@@ -4,25 +4,45 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 import json, os
 
 def scrape_myntra(category="shoes", limit=20):
     options = Options()
-    options.add_argument("--headless")  # Enable for production if needed
+    
+    # Enable headless mode for production deployment
+    options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    
+    # Additional options for better stability on cloud platforms
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-images")  # Faster loading
+    options.add_argument("--disable-plugins")
+    options.add_argument("--disable-background-timer-throttling")
+    options.add_argument("--disable-backgrounding-occluded-windows")
+    options.add_argument("--disable-renderer-backgrounding")
+    options.add_argument("--window-size=1920,1080")
+    
+    # Set user agent to avoid detection
+    options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
+    # Use system Chrome instead of ChromeDriverManager
+    try:
+        # Try to use system chromedriver (installed via Docker)
+        service = Service('/usr/bin/chromedriver')
+        driver = webdriver.Chrome(service=service, options=options)
+    except:
+        # Fallback: Use Chrome binary directly
+        options.binary_location = '/usr/bin/google-chrome'
+        driver = webdriver.Chrome(options=options)
 
     url = f"https://www.myntra.com/{category}"
     print(f"🔗 Visiting: {url}")
     driver.get(url)
 
     try:
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 15).until(
             EC.presence_of_element_located((By.CLASS_NAME, "product-base"))
         )
     except Exception as e:
@@ -57,33 +77,9 @@ def scrape_myntra(category="shoes", limit=20):
             print("⚠️ Skipping a product due to error:", e)
             continue
 
+    # Save to file
     with open("myntra_products.json", "w", encoding="utf-8") as f:
         json.dump(items, f, indent=2, ensure_ascii=False)
 
     driver.quit()
     return items
-
-# Flask app
-from flask import Flask, jsonify
-from flask_cors import CORS
-
-app = Flask(__name__)
-CORS(app)
-
-DATA_FILE = os.path.join(os.getcwd(), "myntra_products.json")
-
-@app.route("/products")
-def products():
-    if not os.path.exists(DATA_FILE):
-        return jsonify([])
-    with open(DATA_FILE, encoding="utf-8") as f:
-        data = json.load(f)
-    return jsonify(data)
-
-@app.route("/refresh")
-def refresh():
-    data = scrape_myntra(category="shoes", limit=20)
-    return jsonify({"message": "Scraped", "items": len(data)})
-
-if __name__ == "__main__":
-    app.run(debug=True)
