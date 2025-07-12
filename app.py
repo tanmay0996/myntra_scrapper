@@ -21,5 +21,11 @@ def refresh():
         json.dump(data, f, indent=2, ensure_ascii=False)
     return jsonify({"status": "ok", "count": len(data)})
 
+
+@app.route("/")
+def home():
+    return "Welcome to Myntra Scraper API!  Try /products or /refresh."
+
+
 if __name__ == "__main__":
     app.run(debug=True)
