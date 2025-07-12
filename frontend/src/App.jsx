@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import {
   Container,
   Typography,
@@ -12,35 +12,49 @@ import {
   CircularProgress,
   Box,
   Paper
-} from '@mui/material'
+} from '@mui/material';
 
 function App() {
-  const [items, setItems] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [scraped, setScraped] = useState(false)
+  const [items, setItems] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [scraped, setScraped] = useState(false);
+
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const refreshProducts = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/refresh`)
-      const { message } = await res.json()
-      console.log(message)
+    setLoading(true);
+    console.log('⏳ Starting scraping...');
+    console.log('🌐 API URL:', API_URL);
 
-      const productsRes = await fetch(`${import.meta.env.VITE_API_URL}/products`)
-      const data = await productsRes.json()
-      setItems(data)
-      setScraped(true)
+    try {
+      const refreshURL = `${API_URL}/refresh`;
+      console.log('🔁 Sending request to /refresh:', refreshURL);
+
+      const res = await fetch(refreshURL);
+      const refreshData = await res.json();
+      console.log('✅ /refresh response:', refreshData);
+
+      const productsURL = `${API_URL}/products`;
+      console.log('📦 Fetching product list from:', productsURL);
+
+      const productsRes = await fetch(productsURL);
+      const data = await productsRes.json();
+
+      console.log('📦 Received products:', data);
+
+      setItems(data);
+      setScraped(true);
     } catch (err) {
-      console.error(err)
+      console.error('❌ Error during scraping:', err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const filtered = items.filter((p) =>
     `${p.brand} ${p.name}`.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  );
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f3f4f6' }}>
@@ -108,12 +122,13 @@ function App() {
             {filtered.map((p, i) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
                 <Card elevation={4} sx={{ borderRadius: 3 }}>
-                 <CardMedia
-  component="img"
-  height="220"
-  image="https://via.placeholder.com/220x220?text=Myntra"
-  alt={p.name}
-/>
+                  <CardMedia
+                    component="img"
+                    height="220"
+                    image="https://via.placeholder.com/220x220?text=Myntra"
+                    alt={p.name}
+                    sx={{ objectFit: 'cover' }}
+                  />
                   <CardContent>
                     <Link
                       href={p.link}
@@ -138,7 +153,7 @@ function App() {
         )}
       </Container>
     </Box>
-  )
+  );
 }
 
-export default App
+export default App;
